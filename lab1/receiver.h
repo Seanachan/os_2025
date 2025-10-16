@@ -26,20 +26,11 @@ typedef struct {
 
 
 typedef struct {
-    /*  TODO: 
-        Message structure for wrapper
-    */
     long mType;
     char msgText[1024];
 } message_t;
 
-// Use standard struct sembuf from sys/sem.h instead of custom typedef
-
 void receive(message_t* message_ptr, mailbox_t* mailbox_ptr);
-
-// P and V definitions
-struct sembuf p = {0, -1, 0};
-struct sembuf v = {0, +1, 0};
 
 union semun{
   int val;
