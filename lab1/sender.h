@@ -36,3 +36,10 @@ void send(message_t message, mailbox_t* mailbox_ptr);
 struct sembuf p = {0, -1, 0};
 struct sembuf v = {0, +1, 0};
 
+union semun{
+  int val;
+  struct semid_ds *buf;
+  unsigned short *array;
+  struct      seminfo *__buf;
+}; 
+
