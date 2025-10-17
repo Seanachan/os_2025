@@ -44,6 +44,7 @@ void receive(message_t* message_ptr, mailbox_t* mailbox_ptr){
 
 int main(int argc, char* argv[] ){
   int option = atoi(argv[1]  );
+  printf((option==1)? "Message Passing\n":"Shared Memory\n");
 
   key_t sem_key = ftok("semfile", 75);
   semid = semget(sem_key, 3, 0666);  // try to get existing set
@@ -51,7 +52,6 @@ int main(int argc, char* argv[] ){
   mailbox_t* mailbox = (mailbox_t*) malloc(sizeof(mailbox_t));
 
   if (semid == -1) {
-    printf("semid == -1\n");
     semid = semget(sem_key, 3, IPC_CREAT | 0666);  // create and init once
     unsigned short vals[3] = {1, 1, 0}; // mutex, empty, full
     union semun arg;
