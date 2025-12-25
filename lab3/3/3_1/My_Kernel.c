@@ -11,14 +11,48 @@ char buf[BUFSIZE];
 
 static ssize_t Mywrite(struct file *fileptr, const char __user *ubuf, size_t buffer_len, loff_t *offset){
     /* Do nothing */
-	return 0;
+	return buffer_len;
 }
 
 
 static ssize_t Myread(struct file *fileptr, char __user *ubuf, size_t buffer_len, loff_t *offset){
-    /*Your code here*/
+  /*Your code here*/
+  struct task_struct *thread;
+  int len=0;
+  if(*offset==0){
+    rcu_read_lock();
+    for_each_thread(current, thread){
+      len += snprintf(
+          buf + len,
+          BUFSIZE - len,
+          "PID: %d TID: %d Priority: %d State: %u\n",
+          current->pid, thread->pid, thread->prio, thread->__state
+          );
 
-    /****************/
+    } 
+    rcu_read_unlock();
+  } else{
+    len = strlen(buf);
+  } 
+
+  if (*offset >= len) {
+    return 0;
+  }
+
+  // Calculate how much to copy
+  int bytes_to_copy = len - *offset;
+  if (bytes_to_copy > buffer_len) {
+    bytes_to_copy = buffer_len;
+  }
+
+  if (copy_to_user(ubuf, buf + *offset, bytes_to_copy)) {
+    return -EFAULT;
+  }
+
+  // Advance the offset
+  *offset += bytes_to_copy;
+  return bytes_to_copy;
+  /****************/
 }
 
 static struct proc_ops Myops = {

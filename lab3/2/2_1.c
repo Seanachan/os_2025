@@ -51,6 +51,7 @@ void *thread(void *arg){
             res = 0;
             for(int k=0; k<matrix_row_y; k++){
                 /*YOUR CODE HERE*/
+                res += x[i][k]* y[k][j];
 
                 /****************/
             }

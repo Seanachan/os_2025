@@ -51,7 +51,7 @@ void data_processing(void){
 
 void *thread1(void *arg){
     char data[30];
-    sprintf(data, "%s", "Thread 1 says hello!");
+    sprintf(data, "%s", "Thread 1 says hello!\n");
 
 #if (THREAD_NUMBER == 1)
     for(int i=0; i<matrix_row_x; i++){
@@ -73,7 +73,13 @@ void *thread1(void *arg){
 
     /*YOUR CODE HERE*/
     /* Hint: Write data into proc file.*/
-
+    int fd = open("/proc/Mythread_info", O_WRONLY);
+    if(fd==-1){
+      perror("Open Failed");
+      return NULL;
+    } 
+    write( fd, data, strlen(data));
+    close(fd);
     /****************/ 
 
     char buffer[50]; 
@@ -86,7 +92,7 @@ void *thread1(void *arg){
 #if (THREAD_NUMBER == 2)
 void *thread2(void *arg){
     char data[30];
-    sprintf(data, "%s", "Thread 2 says hello!");
+    sprintf(data, "%s", "Thread 2 says hello!\n");
     for(int i=matrix_row_x/2; i<matrix_row_x; i++){
         for(int j=0; j<matrix_col_y; j++){
             for(int k=0; k<matrix_row_y; k++){
@@ -97,6 +103,13 @@ void *thread2(void *arg){
     
     /*YOUR CODE HERE*/
     /* Hint: Write data into proc file.*/
+    int fd = open("/proc/Mythread_info", O_WRONLY);
+    if(fd==-1){
+      perror("Open Failed");
+      return NULL;
+    } 
+    write( fd, data, strlen(data));
+    close(fd);
 
     /****************/   
 
