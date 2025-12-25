@@ -21,4 +21,4 @@ load:
 	@sudo insmod $(TARGET_MODULE).ko
 
 unload:
-	@sudo rmmod $(TARGET_MODULE).ko
+	-@sudo rmmod $(TARGET_MODULE) || true

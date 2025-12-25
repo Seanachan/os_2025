@@ -26,6 +26,7 @@ __used __section("__versions") = {
 	{ 0x40a621c5, "snprintf" },
 	{ 0xd272d446, "__rcu_read_unlock" },
 	{ 0xe54e0a6b, "__fortify_panic" },
+	{ 0x33c78c8a, "remove_proc_entry" },
 	{ 0xd272d446, "__fentry__" },
 	{ 0xd272d446, "__x86_return_thunk" },
 	{ 0x82c6f73b, "proc_create" },
@@ -43,6 +44,7 @@ __used __section("__version_ext_crcs") = {
 	0x40a621c5,
 	0xd272d446,
 	0xe54e0a6b,
+	0x33c78c8a,
 	0xd272d446,
 	0xd272d446,
 	0x82c6f73b,
@@ -59,6 +61,7 @@ __used __section("__version_ext_names") =
 	"snprintf\0"
 	"__rcu_read_unlock\0"
 	"__fortify_panic\0"
+	"remove_proc_entry\0"
 	"__fentry__\0"
 	"__x86_return_thunk\0"
 	"proc_create\0"
@@ -69,4 +72,4 @@ __used __section("__version_ext_names") =
 MODULE_INFO(depends, "");
 
 
-MODULE_INFO(srcversion, "7E12567D3417B5E2A20E4D6");
+MODULE_INFO(srcversion, "6CBFB601808FEECF6715DDB");

@@ -19,9 +19,11 @@ static ssize_t Myread(struct file *fileptr, char __user *ubuf, size_t buffer_len
   /*Your code here*/
   struct task_struct *thread;
   int len=0;
+
   if(*offset==0){
     rcu_read_lock();
     for_each_thread(current, thread){
+      if(current->pid==thread->pid) continue;
       len += snprintf(
           buf + len,
           BUFSIZE - len,
@@ -31,9 +33,9 @@ static ssize_t Myread(struct file *fileptr, char __user *ubuf, size_t buffer_len
 
     } 
     rcu_read_unlock();
-  } else{
-    len = strlen(buf);
-  } 
+  }
+  
+  else len = strlen(buf);
 
   if (*offset >= len) {
     return 0;
@@ -67,7 +69,8 @@ static int My_Kernel_Init(void){
 }
 
 static void My_Kernel_Exit(void){
-    pr_info("My kernel says GOODBYE");
+  remove_proc_entry(procfs_name, NULL);
+  pr_info("My kernel says GOODBYE");
 }
 
 module_init(My_Kernel_Init);
