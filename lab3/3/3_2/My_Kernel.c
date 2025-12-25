@@ -82,7 +82,7 @@ static struct proc_ops Myops = {
 };
 
 static int My_Kernel_Init(void){
-    proc_create(procfs_name, 0666, NULL, &Myops);   
+    proc_create(procfs_name, 0644, NULL, &Myops);   
     pr_info("My kernel says Hi");
     return 0;
 }
