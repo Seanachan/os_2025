@@ -1,0 +1,1 @@
+savedcmd_osfs.ko := ld -r -EL  -maarch64elf -z noexecstack --no-warn-rwx-segments --build-id=sha1  -T /usr/src/linux-headers-6.14.0-36-generic/scripts/module.lds -o osfs.ko osfs.o osfs.mod.o .module-common.o
