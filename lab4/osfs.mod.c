@@ -49,6 +49,7 @@ __used __section("__versions") = {
 	{ 0x2a482d2f, "mount_nodev" },
 	{ 0xf1de9e85, "vfree" },
 	{ 0xaaaa20e7, "generic_delete_inode" },
+	{ 0xaa47b76e, "__arch_copy_from_user" },
 	{ 0xb0a6f9c0, "generic_file_open" },
 	{ 0x9c4ed43a, "alt_cb_patch_nops" },
 	{ 0xde9b4ca2, "d_parent_ino" },
@@ -92,6 +93,7 @@ __used __section("__version_ext_crcs") = {
 	0x2a482d2f,
 	0xf1de9e85,
 	0xaaaa20e7,
+	0xaa47b76e,
 	0xb0a6f9c0,
 	0x9c4ed43a,
 	0xde9b4ca2,
@@ -134,6 +136,7 @@ __used __section("__version_ext_names") =
 	"mount_nodev\0"
 	"vfree\0"
 	"generic_delete_inode\0"
+	"__arch_copy_from_user\0"
 	"generic_file_open\0"
 	"alt_cb_patch_nops\0"
 	"d_parent_ino\0"
@@ -147,4 +150,4 @@ __used __section("__version_ext_names") =
 MODULE_INFO(depends, "");
 
 
-MODULE_INFO(srcversion, "3FF1D3B5667BDE1A56D3457");
+MODULE_INFO(srcversion, "1AC78DE5DABBE7484109125");

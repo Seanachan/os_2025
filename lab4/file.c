@@ -60,6 +60,8 @@ static ssize_t osfs_read(struct file *filp, char __user *buf, size_t len, loff_t
 static ssize_t osfs_write(struct file *filp, const char __user *buf, size_t len, loff_t *ppos)
 {   
     //Step1: Retrieve the inode and filesystem information
+		//inode: interface for syscall
+		//osfs_inode: map to physical storage
     struct inode *inode = file_inode(filp);
     struct osfs_inode *osfs_inode = inode->i_private;
     struct osfs_sb_info *sb_info = inode->i_sb->s_fs_info;
@@ -68,19 +70,31 @@ static ssize_t osfs_write(struct file *filp, const char __user *buf, size_t len,
     int ret;
 
     // Step2: Check if a data block has been allocated; if not, allocate one
-
+		if(osfs_inode->i_block==0){
+			ret = osfs_alloc_data_block(sb_info, &osfs_inode->i_block);
+			if(ret!=0) return ret;
+		}
 
     // Step3: Limit the write length to fit within one data block
-
+		//len: # bytes to write
+		if(len > BLOCK_SIZE - *ppos) //BLOCK-*ppos -> space left
+			len = BLOCK_SIZE - *ppos;
 
     // Step4: Write data from user space to the data block
-
+		data_block = sb_info->data_blocks + (osfs_inode->i_blocks * BLOCK_SIZE)
+			+ *ppos;
+		if(copy_from_user(data_block, buf, len)!=0)
+			return -EFAULT;
 
     // Step5: Update inode & osfs_inode attribute
-
+		*ppos += len;
+		if(*ppos > inode->i_size){//i_size: logical size; i_blocks: physical size
+			i_size_write(inode, *ppos);
+			osfs_inode->i_size = *ppos;
+		}
 
     // Step6: Return the number of bytes written
-
+		bytes_written = len;
     
     return bytes_written;
 }

@@ -11,5 +11,19 @@ all:
 clean:
 	$(MAKE) -C $(KDIR) M=$(PWD) clean
 
+mount:
+	sudo insmod osfs.ko
+	sudo mount -t osfs none mnt/
+	sudo dmesg
+
+unmount:
+	sudo umount none
+	sudo rmmod osfs.ko
+	
+test:
+	@cd mnt
+	@sudo touch test1.txt
+	@sudo bash -c "echo 'I LOVE OSLAB' > test1.txt"
+	cat test1.txt
 
 
