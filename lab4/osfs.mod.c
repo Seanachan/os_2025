@@ -35,6 +35,7 @@ __used __section("__versions") = {
 	{ 0x9a479b25, "make_kuid" },
 	{ 0x30c65558, "strnlen" },
 	{ 0x90a48d82, "__ubsan_handle_out_of_bounds" },
+	{ 0x2e32ab5e, "__arch_clear_user" },
 	{ 0xd7a59a65, "vmalloc_noprof" },
 	{ 0x54ae3a7c, "set_nlink" },
 	{ 0xc397dc30, "strncmp" },
@@ -79,6 +80,7 @@ __used __section("__version_ext_crcs") = {
 	0x9a479b25,
 	0x30c65558,
 	0x90a48d82,
+	0x2e32ab5e,
 	0xd7a59a65,
 	0x54ae3a7c,
 	0xc397dc30,
@@ -122,6 +124,7 @@ __used __section("__version_ext_names") =
 	"make_kuid\0"
 	"strnlen\0"
 	"__ubsan_handle_out_of_bounds\0"
+	"__arch_clear_user\0"
 	"vmalloc_noprof\0"
 	"set_nlink\0"
 	"strncmp\0"
@@ -150,4 +153,4 @@ __used __section("__version_ext_names") =
 MODULE_INFO(depends, "");
 
 
-MODULE_INFO(srcversion, "1AC78DE5DABBE7484109125");
+MODULE_INFO(srcversion, "3E45FA0B9AB451BD1CD51B9");

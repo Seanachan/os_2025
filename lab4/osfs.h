@@ -24,6 +24,7 @@
 #define BLOCK_BITMAP_SIZE BITMAP_SIZE(DATA_BLOCK_COUNT)
 
 #define ROOT_INODE 1            // Define the root inode as 1
+#define OSFS_DIRECT_BLOCKS 12
 
 /**
  * Struct: osfs_sb_info
@@ -66,7 +67,8 @@ struct osfs_inode {
     struct timespec64 __i_atime;        // Last access time
     struct timespec64 __i_mtime;        // Last modification time
     struct timespec64 __i_ctime;        // Creation time
-    uint32_t i_block;                   // Simplified handling, single data block pointer
+    //uint32_t i_block;                   // Simplified handling, single data block pointer
+		uint32_t i_block[OSFS_DIRECT_BLOCKS]; //multi-level
 };
 
 struct inode *osfs_iget(struct super_block *sb, unsigned long ino);

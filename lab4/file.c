@@ -33,9 +33,23 @@ static ssize_t osfs_read(struct file *filp, char __user *buf, size_t len, loff_t
     if (*ppos + len > osfs_inode->i_size)
         len = osfs_inode->i_size - *ppos;
 
-    data_block = sb_info->data_blocks + osfs_inode->i_block * BLOCK_SIZE + *ppos;
-    if (copy_to_user(buf, data_block, len))
-        return -EFAULT;
+		/* Multi-level */
+		uint32_t logical_block = *ppos / BLOCK_SIZE;
+		uint32_t offset_in_block = *ppos % BLOCK_SIZE;
+
+		if(len > BLOCK_SIZE - offset_in_block)
+			len = BLOCK_SIZE - offset_in_block;
+
+		if(osfs_inode->i_block[logical_block] == 0){
+			if(clear_user(buf, len)) return -EFAULT;
+		}else{
+			data_block = sb_info->data_blocks + (osfs_inode->i_block[logical_block] * BLOCK_SIZE) +offset_in_block;
+			if(copy_to_user(buf, data_block, len)) return -EFAULT;
+		}
+
+    //data_block = sb_info->data_blocks + osfs_inode->i_block * BLOCK_SIZE + *ppos;
+    //if (copy_to_user(buf, data_block, len))
+        //return -EFAULT;
 
     *ppos += len;
     bytes_read = len;
@@ -69,10 +83,17 @@ static ssize_t osfs_write(struct file *filp, const char __user *buf, size_t len,
     ssize_t bytes_written;
     int ret;
 
+		uint32_t logical_block = *ppos / BLOCK_SIZE;
+		uint32_t offset_in_block = *ppos % BLOCK_SIZE;
+		if(logical_block >= OSFS_DIRECT_BLOCKS)
+			return -EFBIG;
+
     // Step2: Check if a data block has been allocated; if not, allocate one
-		if(osfs_inode->i_block==0){
-			ret = osfs_alloc_data_block(sb_info, &osfs_inode->i_block);
+		//if(osfs_inode->i_block==0){ //Original
+		if(osfs_inode->i_block[logical_block]==0){
+			ret = osfs_alloc_data_block(sb_info, &osfs_inode->i_block[logical_block]);
 			if(ret!=0) return ret;
+			osfs_inode->i_blocks++;
 		}
 
     // Step3: Limit the write length to fit within one data block
@@ -81,9 +102,12 @@ static ssize_t osfs_write(struct file *filp, const char __user *buf, size_t len,
 			len = BLOCK_SIZE - *ppos;
 
     // Step4: Write data from user space to the data block
-		data_block = sb_info->data_blocks + (osfs_inode->i_blocks * BLOCK_SIZE)
+		size_t write_len = min(len, (size_t) (BLOCK_SIZE - offset_in_block)); //multi-level 
+		data_block = sb_info->data_blocks + (osfs_inode->i_block[logical_block] * BLOCK_SIZE) + offset_in_block //multi-level
+		//data_block = sb_info->data_blocks + (osfs_inode->i_blocks * BLOCK_SIZE)
 			+ *ppos;
-		if(copy_from_user(data_block, buf, len)!=0)
+		//if(copy_from_user(data_block, buf, len)!=0) //original
+		if(copy_from_user(data_block, buf, write_len)!=0) //multi-level
 			return -EFAULT;
 
     // Step5: Update inode & osfs_inode attribute
@@ -94,7 +118,8 @@ static ssize_t osfs_write(struct file *filp, const char __user *buf, size_t len,
 		}
 
     // Step6: Return the number of bytes written
-		bytes_written = len;
+		//bytes_written = len; //original
+		bytes_written = write_len; //multi-level
     
     return bytes_written;
 }
