@@ -29,7 +29,10 @@ static struct dentry *osfs_lookup(struct inode *dir, struct dentry *dentry, unsi
 
     // Read the parent directory's data block
     //dir_data_block = sb_info->data_blocks + parent_inode->i_block * BLOCK_SIZE;
+
+		/*start of Multi-Level code*/
     dir_data_block = sb_info->data_blocks + parent_inode->i_block[0] * BLOCK_SIZE;
+		/*end of Multi-Level code*/
 
     // Calculate the number of directory entries
     dir_entry_count = parent_inode->i_size / sizeof(struct osfs_dir_entry);
@@ -77,8 +80,11 @@ static int osfs_iterate(struct file *filp, struct dir_context *ctx)
             return 0;
     }
 
+		/*start of Multi-Level code*/
+		/*end of Multi-Level code */
 		if(osfs_inode->i_block[0] == 0) return 0;
     dir_data_block = sb_info->data_blocks + osfs_inode->i_block[0] * BLOCK_SIZE;
+		/*end of Multi-Level code */
     dir_entry_count = osfs_inode->i_size / sizeof(struct osfs_dir_entry);
     dir_entries = (struct osfs_dir_entry *)dir_data_block;
 
@@ -221,8 +227,11 @@ static int osfs_add_dir_entry(struct inode *dir, uint32_t inode_no, const char *
     int i;
 
     // Read the parent directory's data block
+
+		/*start of Multi-Level code*/
 		if(parent_inode->i_block[0] == 0) return NULL;
     dir_data_block = sb_info->data_blocks + parent_inode->i_block[0] * BLOCK_SIZE;
+		/*end of Multi-Level code */
 
     // Calculate the existing number of directory entries
     dir_entry_count = parent_inode->i_size / sizeof(struct osfs_dir_entry);

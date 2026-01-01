@@ -21,9 +21,9 @@ unmount:
 	sudo rmmod osfs.ko
 	
 test:
-	@cd mnt
-	@sudo touch test1.txt
-	@sudo bash -c "echo 'I LOVE OSLAB' > test1.txt"
+	cd mnt
+	sudo touch test1.txt
+	sudo bash -c "echo 'I LOVE OSLAB' > test1.txt"
 	cat test1.txt
 
 

@@ -83,18 +83,23 @@ static ssize_t osfs_write(struct file *filp, const char __user *buf, size_t len,
     ssize_t bytes_written;
     int ret;
 
+		/*start of Multi-Level code*/
 		uint32_t logical_block = *ppos / BLOCK_SIZE;
 		uint32_t offset_in_block = *ppos % BLOCK_SIZE;
+		/*end of Multi-Level code*/
 		if(logical_block >= OSFS_DIRECT_BLOCKS)
 			return -EFBIG;
 
     // Step2: Check if a data block has been allocated; if not, allocate one
 		//if(osfs_inode->i_block==0){ //Original
+
+		/*start of Multi-Level code*/
 		if(osfs_inode->i_block[logical_block]==0){
 			ret = osfs_alloc_data_block(sb_info, &osfs_inode->i_block[logical_block]);
 			if(ret!=0) return ret;
 			osfs_inode->i_blocks++;
 		}
+		/*end of Multi-Level code*/
 
     // Step3: Limit the write length to fit within one data block
 		//len: # bytes to write
