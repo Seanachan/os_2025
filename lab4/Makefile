@@ -3,7 +3,7 @@ PWD := $(shell pwd)
 
 obj-m += osfs.o
 
-osfs-objs := super.o inode.o file.o dir.o osfs_init.o
+osfs-objs := super.o inode.o file.o dir.o block.o osfs_init.o
 
 all:
 	$(MAKE) -C $(KDIR) M=$(PWD) modules

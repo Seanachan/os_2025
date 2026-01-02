@@ -33,19 +33,27 @@ static ssize_t osfs_read(struct file *filp, char __user *buf, size_t len, loff_t
     if (*ppos + len > osfs_inode->i_size)
         len = osfs_inode->i_size - *ppos;
 
-		/* Multi-level */
-		uint32_t logical_block = *ppos / BLOCK_SIZE;
-		uint32_t offset_in_block = *ppos % BLOCK_SIZE;
+	/* Multi-level indexing */
+	uint32_t logical_block = *ppos / BLOCK_SIZE;
+	uint32_t offset_in_block = *ppos % BLOCK_SIZE;
+	uint32_t physical_block;
+	int ret;
 
-		if(len > BLOCK_SIZE - offset_in_block)
-			len = BLOCK_SIZE - offset_in_block;
+	if(len > BLOCK_SIZE - offset_in_block)
+		len = BLOCK_SIZE - offset_in_block;
 
-		if(osfs_inode->i_block[logical_block] == 0){
-			if(clear_user(buf, len)) return -EFAULT;
-		}else{
-			data_block = sb_info->data_blocks + (osfs_inode->i_block[logical_block] * BLOCK_SIZE) +offset_in_block;
-			if(copy_to_user(buf, data_block, len)) return -EFAULT;
-		}
+	// Get physical block number (don't allocate if not exists)
+	ret = osfs_get_block_number(inode, logical_block, &physical_block, 0);
+	if(ret != 0)
+		return ret;
+
+	if(physical_block == 0){
+		// Sparse file: block not allocated, return zeros
+		if(clear_user(buf, len)) return -EFAULT;
+	}else{
+		data_block = sb_info->data_blocks + (physical_block * BLOCK_SIZE) + offset_in_block;
+		if(copy_to_user(buf, data_block, len)) return -EFAULT;
+	}
 
     //data_block = sb_info->data_blocks + osfs_inode->i_block * BLOCK_SIZE + *ppos;
     //if (copy_to_user(buf, data_block, len))
@@ -83,23 +91,16 @@ static ssize_t osfs_write(struct file *filp, const char __user *buf, size_t len,
     ssize_t bytes_written;
     int ret;
 
-		/*start of Multi-Level code*/
-		uint32_t logical_block = *ppos / BLOCK_SIZE;
-		uint32_t offset_in_block = *ppos % BLOCK_SIZE;
-		/*end of Multi-Level code*/
-		if(logical_block >= OSFS_DIRECT_BLOCKS)
-			return -EFBIG;
+	/*start of Multi-Level indexing*/
+	uint32_t logical_block = *ppos / BLOCK_SIZE;
+	uint32_t offset_in_block = *ppos % BLOCK_SIZE;
+	uint32_t physical_block;
+	/*end of Multi-Level indexing*/
 
-    // Step2: Check if a data block has been allocated; if not, allocate one
-		//if(osfs_inode->i_block==0){ //Original
-
-		/*start of Multi-Level code*/
-		if(osfs_inode->i_block[logical_block]==0){
-			ret = osfs_alloc_data_block(sb_info, &osfs_inode->i_block[logical_block]);
-			if(ret!=0) return ret;
-			osfs_inode->i_blocks++;
-		}
-		/*end of Multi-Level code*/
+    // Step2: Get or allocate the data block using multi-level indexing
+	ret = osfs_get_block_number(inode, logical_block, &physical_block, 1);
+	if(ret != 0)
+		return ret;
 
     // Step3: Limit the write length to fit within one data block
 		//len: # bytes to write
@@ -107,13 +108,10 @@ static ssize_t osfs_write(struct file *filp, const char __user *buf, size_t len,
 			len = BLOCK_SIZE - *ppos;
 
     // Step4: Write data from user space to the data block
-		size_t write_len = min(len, (size_t) (BLOCK_SIZE - offset_in_block)); //multi-level 
-		data_block = sb_info->data_blocks + (osfs_inode->i_block[logical_block] * BLOCK_SIZE) + offset_in_block //multi-level
-		//data_block = sb_info->data_blocks + (osfs_inode->i_blocks * BLOCK_SIZE)
-			+ *ppos;
-		//if(copy_from_user(data_block, buf, len)!=0) //original
-		if(copy_from_user(data_block, buf, write_len)!=0) //multi-level
-			return -EFAULT;
+	size_t write_len = min(len, (size_t) (BLOCK_SIZE - offset_in_block));
+	data_block = sb_info->data_blocks + (physical_block * BLOCK_SIZE) + offset_in_block;
+	if(copy_from_user(data_block, buf, write_len)!=0)
+		return -EFAULT;
 
     // Step5: Update inode & osfs_inode attribute
 		*ppos += len;

@@ -24,7 +24,11 @@
 #define BLOCK_BITMAP_SIZE BITMAP_SIZE(DATA_BLOCK_COUNT)
 
 #define ROOT_INODE 1            // Define the root inode as 1
-#define OSFS_DIRECT_BLOCKS 12
+#define OSFS_DIRECT_BLOCKS 10
+#define OSFS_SINGLE_INDIRECT 10
+#define OSFS_DOUBLE_INDIRECT 11
+#define OSFS_N_BLOCKS 12
+#define PTRS_PER_BLOCK (BLOCK_SIZE / sizeof(uint32_t))  // 1024 pointers per block
 
 /**
  * Struct: osfs_sb_info
@@ -69,9 +73,9 @@ struct osfs_inode {
     struct timespec64 __i_ctime;        // Creation time
     //uint32_t i_block;                   // Simplified handling, single data block pointer
 
-		/*start of Multi-Level code*/
-		uint32_t i_block[OSFS_DIRECT_BLOCKS]; //multi-level
-		/*end of Multi-Level code*/
+	/*start of Multi-Level code*/
+	uint32_t i_block[OSFS_N_BLOCKS]; // 0-9: direct, 10: single indirect, 11: double indirect
+	/*end of Multi-Level code*/
 };
 
 struct inode *osfs_iget(struct super_block *sb, unsigned long ino);
@@ -82,6 +86,10 @@ int osfs_fill_super(struct super_block *sb, void *data, int silent);
 struct inode *osfs_new_inode(const struct inode *dir, umode_t mode);
 void osfs_free_data_block(struct osfs_sb_info *sb_info, uint32_t block_no);
 void osfs_destroy_inode(struct inode *inode);
+
+// Multi-level indexing helper functions
+int osfs_get_block_number(struct inode *inode, uint32_t logical_block, uint32_t *physical_block, int create);
+
 // External Operations Structures
 
 extern const struct inode_operations osfs_file_inode_operations;
